@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet'
 import { MoveDown, Navigation, Settings } from 'lucide-react'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents, ZoomControl } from 'react-leaflet'
@@ -494,8 +494,8 @@ function CityMarker({
   const togglePickingCity = useAppStore((s) => s.togglePickingCity)
   const pickingIndex = useAppStore((s) => s.pickingOrder.indexOf(city.id) + 1)
 
-  // 优先用避让后的位置（latLng），否则用真实坐标
-  const markerPos = position ? toGcj02(position) : toGcj02(city.location)
+  // 优先用避让后的位置（已是 GCJ 坐标，不再二次转换），否则用真实坐标
+  const markerPos = position ?? toGcj02(city.location)
 
   return (
     <Marker
@@ -646,6 +646,7 @@ function TypeFilterBar() {
 export default function MapPanel() {
   const [labelOffsets, setLabelOffsets] = useState<Record<string, { offsetLatLng: [number, number] | null }>>({})
   const [leaderPaths, setLeaderPaths] = useState<{ id: string; pts: [number, number][] }[]>([])
+
   const selectedCityIds = useAppStore((s) => s.selectedCityIds)
   const activeCityId = useAppStore((s) => s.activeCityId)
   const activePoiId = useAppStore((s) => s.activePoiId)
@@ -947,6 +948,63 @@ export default function MapPanel() {
     return ids
   })()
 
+  // 避让输入必须 memo 化：内联数组每次渲染都是新引用，会让 LabelLayout 死循环重算
+  const layoutLabels_input = useMemo(() => {
+    if (cityView) return []
+    return [
+      ...(showAllCities
+        ? cities.map((c) => ({
+            id: c.id,
+            pos: toGcj02(c.location),
+            w: Math.round(53 + c.name.length * 12.5) + 60,
+            h: 50,
+          }))
+        : showImportantCitiesOnly
+          ? cities
+              .filter((c) => CITY_RANK[c.id] > 0 || selectedCityIds.includes(c.id))
+              .map((c) => ({
+                id: c.id,
+                pos: toGcj02(c.location),
+                w: Math.round(53 + c.name.length * 12.5) + 60,
+                h: 50,
+              }))
+          : []),
+      ...(showCountryLabels
+        ? COUNTRIES_DATA.slice(0, 18).map((c) => ({
+            id: `country-${c.id}`,
+            pos: toGcj02(c.view.center),
+            w: 100,
+            h: 28,
+          }))
+        : []),
+      ...(originPos && !showCountryLabels ? [{ id: '__origin', pos: originPos, w: 110, h: 36 }] : []),
+      ...(retPos && !showCountryLabels ? [{ id: '__return', pos: retPos, w: 110, h: 36 }] : []),
+    ]
+  }, [cityView, showAllCities, showImportantCitiesOnly, showCountryLabels, selectedCityIds, originPos, retPos])
+
+  // 稳定的回调：内容无变化时不 setState，避免渲染循环
+  const labelOffsetsRef = useRef('')
+  const handleLayoutChange = useCallback(
+    (result: Map<string, { offsetLatLng: [number, number] | null; leaderPath: [number, number][] }>) => {
+      const off: Record<string, { offsetLatLng: [number, number] | null }> = {}
+      const paths: { id: string; pts: [number, number][] }[] = []
+      const keys: string[] = []
+      for (const [id, v] of result) {
+        off[id] = { offsetLatLng: v.offsetLatLng }
+        keys.push(`${id}:${v.offsetLatLng?.[0].toFixed(4)},${v.offsetLatLng?.[1].toFixed(4)}`)
+        if (v.leaderPath.length >= 2) {
+          paths.push({ id, pts: v.leaderPath as [number, number][] })
+        }
+      }
+      const sig = keys.join('|')
+      if (sig === labelOffsetsRef.current) return // 无变化，跳出渲染循环
+      labelOffsetsRef.current = sig
+      setLabelOffsets(off)
+      setLeaderPaths(paths)
+    },
+    [],
+  )
+
   return (
     <div className="relative h-full w-full">
       <MapContainer
@@ -968,64 +1026,8 @@ export default function MapPanel() {
         {/* 标注防遮挡：计算偏移 + leader line */}
         {!cityView && (
           <LabelLayout
-            labels={[
-              // 城市标注：根据 zoom 决定显示范围
-              ...(showAllCities
-                ? cities.map((c) => ({
-                    id: c.id,
-                    pos: toGcj02(c.location),
-                    w: Math.round(53 + c.name.length * 12.5) + 60,
-                    h: 50,
-                  }))
-                : showImportantCitiesOnly
-                  ? cities
-                      .filter((c) => CITY_RANK[c.id] > 0 || selectedCityIds.includes(c.id))
-                      .map((c) => ({
-                        id: c.id,
-                        pos: toGcj02(c.location),
-                        w: Math.round(53 + c.name.length * 12.5) + 60,
-                        h: 50,
-                      }))
-                  : []),
-              // 国家标注：大视野下显示，**只显示 TOP 国际游客国家**（避免小国挤在一起）
-              ...(showCountryLabels
-                ? COUNTRIES_DATA
-                    // 全球 30 国，但只显示在地图视口内 + 著名度排名靠前的
-                    // 算法：先按"前 12 个"展示
-                    .slice(0, 18)
-                    .map((c) => ({
-                      id: `country-${c.id}`,
-                      pos: toGcj02(c.view.center),
-                      w: 100,
-                      h: 28,
-                    }))
-                : []),
-              // 端点标注：仅在国家级 LOD（zoom < 4）以外参与避让
-              ...(originPos && !showCountryLabels ? [{
-                id: '__origin',
-                pos: originPos,
-                w: 110,
-                h: 36,
-              }] : []),
-              ...(retPos && !showCountryLabels ? [{
-                id: '__return',
-                pos: retPos,
-                w: 110,
-                h: 36,
-              }] : []),
-            ]}
-            onLayoutChange={(result) => {
-              const off: Record<string, { offsetLatLng: [number, number] | null }> = {}
-              const paths: { id: string; pts: [number, number][] }[] = []
-              for (const [id, v] of result) {
-                off[id] = { offsetLatLng: v.offsetLatLng }
-                if (v.leaderPath.length >= 2) {
-                  paths.push({ id, pts: v.leaderPath as [number, number][] })
-                }
-              }
-              setLabelOffsets(off)
-              setLeaderPaths(paths)
-            }}
+            labels={layoutLabels_input}
+            onLayoutChange={handleLayoutChange}
           />
         )}
 
@@ -1044,7 +1046,7 @@ export default function MapPanel() {
           return (
             <Marker
               key={`country-${c.id}`}
-              position={off ? toGcj02(off) : toGcj02(c.view.center)}
+              position={off ?? toGcj02(c.view.center)}
               icon={countryLabelIcon(c.name, c.emoji)}
               zIndexOffset={300}
               interactive={false}
@@ -1138,7 +1140,7 @@ export default function MapPanel() {
               {/* 出发城市标注 - 仅当不在国家级 LOD 时显示 */}
               {originEp && originPos && !showCountryLabels && (
                 <Marker
-                  position={originPosLaid ? toGcj02(originPosLaid) : originPos}
+                  position={originPosLaid ?? originPos}
                   icon={endpointLabelIcon(originEp.name, '✈️', '出发')}
                   zIndexOffset={640}
                 >
@@ -1155,7 +1157,7 @@ export default function MapPanel() {
               {/* 归途城市标注 - 仅当不在国家级 LOD 时显示 */}
               {returnEp && retPos && !showCountryLabels && (
                 <Marker
-                  position={retPosLaid ? toGcj02(retPosLaid) : retPos}
+                  position={retPosLaid ?? retPos}
                   icon={endpointLabelIcon(returnEp.name, '🏠', '归途')}
                   zIndexOffset={640}
                 >
