@@ -1,5 +1,5 @@
-import { useEffect, useRef, type ReactNode } from 'react'
-import { Compass } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Compass, Maximize2, Minimize2 } from 'lucide-react'
 import ConfigMenu from './ConfigMenu'
 import StepIndicator from './StepIndicator'
 import ThemeSwitch from './ThemeSwitch'
@@ -14,6 +14,8 @@ interface AppLayoutProps {
 export default function AppLayout({ left, right }: AppLayoutProps) {
   const currentStep = useAppStore((s) => s.currentStep)
   const leftRef = useRef<HTMLElement>(null)
+  // 手机端地图展开/收起：42vh ↔ 85vh
+  const [mapExpanded, setMapExpanded] = useState(false)
 
   // 切换步骤时左侧面板回到顶部
   useEffect(() => {
@@ -48,8 +50,21 @@ export default function AppLayout({ left, right }: AppLayoutProps) {
           {left}
         </section>
         {/* 右侧：地图（固定，跟随左侧联动；窄屏给足高度便于触控操作） */}
-        <section className="relative h-[42vh] min-h-[260px] shrink-0 lg:h-auto lg:min-w-0 lg:flex-1">
+        <section
+          className={`relative shrink-0 transition-[height] duration-300 ${
+            mapExpanded ? 'h-[85vh]' : 'h-[42vh] min-h-[260px]'
+          } lg:h-auto lg:min-w-0 lg:flex-1`}
+        >
           {right}
+          {/* 手机端：一键展开/收起地图 */}
+          <button
+            type="button"
+            onClick={() => setMapExpanded((v) => !v)}
+            title={mapExpanded ? '收起地图' : '展开地图'}
+            className="absolute left-3 top-3 z-[1000] flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white/95 text-ink shadow-sm backdrop-blur transition hover:border-moss/50 hover:text-moss sm:hidden"
+          >
+            {mapExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
         </section>
       </main>
     </div>

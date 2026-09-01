@@ -1376,7 +1376,15 @@ function ImagePreviewOverlay() {
       onMouseEnter={() => setImagePreviewPoi(poi)}
       onMouseLeave={() => setImagePreviewPoi(null)}
     >
-      <div className="pointer-events-auto w-[min(420px,92vw)] overflow-hidden rounded-2xl border-2 border-moss bg-white shadow-2xl">
+      <div className="pointer-events-auto relative w-[min(420px,92vw)] overflow-hidden rounded-2xl border-2 border-moss bg-white shadow-2xl">
+        <button
+          type="button"
+          onClick={() => setImagePreviewPoi(null)}
+          title="关闭"
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition hover:bg-black/60"
+        >
+          ✕
+        </button>
         <PoiImage poi={poi} className="h-56 w-full" rounded="rounded-none" />
         <div className="p-3">
           <div className="flex items-center gap-1.5">

@@ -1,0 +1,19 @@
+{
+  "name": "漫游记 WanderPlan",
+  "short_name": "漫游记",
+  "description": "AI 陪你一步步规划旅行：测评 → 选目的地 → 定参数 → 出行程",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fafaf7",
+  "theme_color": "#5b8c5a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

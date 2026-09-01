@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Poi } from '../../types'
 import { POI_META } from '../../types'
 import { useAppStore } from '../../store/useAppStore'
@@ -21,6 +21,8 @@ export function PoiImage({
   const [localOk, setLocalOk] = useState<boolean | null>(null) // null=检测中, true=有, false=无
   const [userImgOk, setUserImgOk] = useState<boolean>(false)
   const setImagePreviewPoi = useAppStore((s) => s.setImagePreviewPoi)
+  // 触屏没有 hover：点一下图片弹出信息卡，3 秒后自动关闭
+  const touchTimer = useRef<number | null>(null)
 
   // 探测本地图是否存在
   useEffect(() => {
@@ -52,6 +54,11 @@ export function PoiImage({
       title={poi.name}
       onMouseEnter={() => setImagePreviewPoi(poi)}
       onMouseLeave={() => setImagePreviewPoi(null)}
+      onTouchStart={() => {
+        setImagePreviewPoi(poi)
+        if (touchTimer.current) window.clearTimeout(touchTimer.current)
+        touchTimer.current = window.setTimeout(() => setImagePreviewPoi(null), 3000)
+      }}
     >
       {useRealImg ? (
         <img
