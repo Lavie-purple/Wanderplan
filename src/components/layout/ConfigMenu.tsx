@@ -24,7 +24,7 @@ export default function ConfigMenu() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         title="配置"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-soft transition hover:bg-moss-pale hover:text-moss"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-soft transition hover:bg-moss-pale hover:text-moss sm:h-9 sm:w-9"
       >
         <MoreHorizontal size={18} />
       </button>

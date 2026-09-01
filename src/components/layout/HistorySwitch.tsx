@@ -117,7 +117,7 @@ export default function HistorySwitch() {
         onClick={() => handleToggle(!historyEnabled)}
         title={historyEnabled ? '已开启：可自由切换步骤' : '关闭：必须从偏好测评开始'}
         className={[
-          'flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs transition',
+          'flex h-8 items-center gap-1.5 rounded-full border px-2 text-xs transition sm:h-9 sm:px-3',
           historyEnabled
             ? 'border-moss bg-moss text-white shadow-sm'
             : 'border-line bg-white/80 text-ink-soft hover:border-moss/50 hover:text-moss',
@@ -147,7 +147,7 @@ export default function HistorySwitch() {
             type="button"
             onClick={() => fileRef.current?.click()}
             title="从 markdown 导入历史行程"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line bg-white/80 text-ink-soft transition hover:border-moss/50 hover:text-moss"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line bg-white/80 text-ink-soft transition hover:border-moss/50 hover:text-moss sm:h-9 sm:w-9"
           >
             <Upload size={14} />
           </button>

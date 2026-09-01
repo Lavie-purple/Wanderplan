@@ -15,7 +15,7 @@ export default function ThemeSwitch() {
         document.documentElement.dataset.theme = next === 'dark' ? 'dark' : ''
       }}
       title={isDark ? '切换到亮色' : '切换到暗色'}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line bg-white/80 text-ink-soft transition hover:border-moss/50 hover:bg-moss-pale hover:text-moss"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line bg-white/80 text-ink-soft transition hover:border-moss/50 hover:bg-moss-pale hover:text-moss sm:h-9 sm:w-9"
     >
       {isDark ? <Sun size={16} /> : <Moon size={16} />}
     </button>

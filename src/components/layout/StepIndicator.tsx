@@ -45,7 +45,7 @@ export default function StepIndicator() {
                       : '请先生成 AI 行程'
                 : label
             }
-            className={`flex items-center gap-1.5 rounded-full px-2 py-1.5 text-xs transition-colors sm:px-3 ${
+            className={`flex h-8 w-8 items-center justify-center rounded-full p-0 transition-colors sm:h-auto sm:w-auto sm:gap-1.5 sm:px-3 sm:py-1.5 ${
               active
                 ? 'bg-moss text-white shadow-sm'
                 : isLocked

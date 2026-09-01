@@ -210,3 +210,10 @@ body {
 :root[data-theme='dark'] .bg-cream {
   background-color: #1d2522 !important;
 }
+
+/* 手机端隐藏地图缩放按钮（触屏双指捏合即可），为筛选条腾出空间 */
+@media (max-width: 639px) {
+  .leaflet-control-zoom {
+    display: none !important;
+  }
+}

@@ -22,26 +22,23 @@ export default function AppLayout({ left, right }: AppLayoutProps) {
 
   return (
     <div className="flex h-screen flex-col bg-cream text-ink">
-      <header className="relative z-[1100] flex shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-b border-line bg-white/80 px-3 py-2 backdrop-blur sm:px-5">
+      <header className="relative z-[1100] flex shrink-0 items-center justify-between gap-1.5 whitespace-nowrap border-b border-line bg-white/80 px-2 py-1.5 backdrop-blur sm:gap-3 sm:px-5 sm:py-2.5">
         {/* 品牌区：窄屏隐藏副标题并禁止换行，避免"一字一行" */}
-        <div className="flex min-w-0 shrink items-center gap-2">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-moss text-white shadow-sm">
-            <Compass size={20} />
+        <div className="flex shrink items-center gap-1.5 sm:gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-moss text-white shadow-sm sm:h-9 sm:w-9">
+            <Compass size={18} />
           </span>
-          <div className="min-w-0 leading-tight">
+          <div className="leading-tight">
             <h1 className="whitespace-nowrap font-serif-sc text-base sm:text-lg">漫游记</h1>
             <p className="hidden text-xs text-ink-soft sm:block">AI 陪你一步步规划旅行</p>
           </div>
         </div>
-        {/* 工具区：主题 / 历史行程 / 配置 */}
+        {/* 工具区：主题 / 历史行程 / 配置 / 步骤导航——手机上也保持一行 */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <ThemeSwitch />
           <HistorySwitch />
           <ConfigMenu />
-          {/* 步骤导航：窄屏独占一行居中（仅图标），桌面回到行内 */}
-          <div className="order-last flex w-full basis-full justify-center sm:order-none sm:w-auto sm:basis-auto sm:block">
-            <StepIndicator />
-          </div>
+          <StepIndicator />
         </div>
       </header>
 

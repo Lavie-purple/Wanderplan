@@ -596,10 +596,28 @@ function TypeFilterBar() {
   const togglePoiType = useAppStore((s) => s.togglePoiType)
   const tiandituEnabled = useAppStore((s) => s.tiandituEnabled)
   const setTiandituEnabled = useAppStore((s) => s.setTiandituEnabled)
+  // 手机屏幕小：默认收起筛选条（点 🎯 展开），避免和缩放按钮重叠
+  const [filterOpen, setFilterOpen] = useState(
+    () => typeof window === 'undefined' || window.innerWidth >= 640,
+  )
 
   return (
-    <div className="absolute right-3 top-3 z-[1000] flex w-9 flex-col gap-1.5">
-      {POI_TYPE_ORDER.map((type) => {
+    <div className="absolute right-3 top-3 z-[1000] flex w-9 flex-col items-center gap-1">
+      {/* 展开/收起开关 */}
+      <button
+        type="button"
+        onClick={() => setFilterOpen((v) => !v)}
+        title={filterOpen ? '收起附近筛选' : '展开附近筛选'}
+        className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm shadow-sm backdrop-blur transition ${
+          filterOpen
+            ? 'border-moss/50 bg-moss text-white'
+            : 'border-line bg-white/95 text-ink'
+        }`}
+      >
+        🎯
+      </button>
+      {!filterOpen && null}
+      {filterOpen && POI_TYPE_ORDER.map((type) => {
         const meta = POI_META[type]
         const on = visiblePoiTypes[type]
         const label = type === 'hotel' ? '附近酒店' : `附近${meta.label}`
@@ -609,7 +627,7 @@ function TypeFilterBar() {
             type="button"
             onClick={() => togglePoiType(type)}
             title={`${label}（点击显示/隐藏）`}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm shadow-sm backdrop-blur transition ${
+            className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm shadow-sm backdrop-blur transition sm:h-9 sm:w-9 ${
               on
                 ? 'border-moss/40 bg-white/95 text-ink'
                 : 'border-line bg-white/60 text-ink-soft/50'
@@ -621,6 +639,7 @@ function TypeFilterBar() {
       })}
 
       {/* 境外中文标注开关（更换 Key 请在顶部「配置」中） */}
+      {filterOpen && (
       <button
         type="button"
         onClick={() => setTiandituEnabled(!tiandituEnabled)}
@@ -629,7 +648,7 @@ function TypeFilterBar() {
             ? '境外中文标注：已开启（点击关闭；更换 Key 请在顶部「配置」中）'
             : '境外中文标注：已关闭（点击开启；更换 Key 请在顶部「配置」中）'
         }
-        className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition ${
+        className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-sm backdrop-blur transition sm:h-9 sm:w-9 ${
           tiandituEnabled
             ? 'border-moss/50 bg-moss text-white'
             : 'border-line bg-white/60 text-ink-soft/60'
@@ -639,7 +658,9 @@ function TypeFilterBar() {
           <Settings size={14} />
         </span>
       </button>
-    </div>
+      )}
+
+      </div>
   )
 }
 

@@ -234,7 +234,7 @@ function ItineraryItemCard({
             type="button"
             title="上移"
             onClick={(e) => { e.stopPropagation(); onMoveUp() }}
-            className="flex h-5 w-5 items-center justify-center rounded-full text-ink-soft hover:bg-moss-pale hover:text-moss"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-ink-soft hover:bg-moss-pale hover:text-moss sm:h-5 sm:w-5"
           >
             ▲
           </button>
@@ -244,7 +244,7 @@ function ItineraryItemCard({
             type="button"
             title="下移"
             onClick={(e) => { e.stopPropagation(); onMoveDown() }}
-            className="flex h-5 w-5 items-center justify-center rounded-full text-ink-soft hover:bg-moss-pale hover:text-moss"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-ink-soft hover:bg-moss-pale hover:text-moss sm:h-5 sm:w-5"
           >
             ▼
           </button>
@@ -254,7 +254,7 @@ function ItineraryItemCard({
             type="button"
             title="移除"
             onClick={(e) => { e.stopPropagation(); onRemove() }}
-            className="flex h-5 w-5 items-center justify-center rounded-full text-ink-soft hover:bg-red-50 hover:text-red-400"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-ink-soft hover:bg-red-50 hover:text-red-400 sm:h-5 sm:w-5"
           >
             <X size={11} />
           </button>
@@ -264,7 +264,7 @@ function ItineraryItemCard({
             type="button"
             title="换一个"
             onClick={(e) => { e.stopPropagation(); replacePoi(dayIndex, itemIndex) }}
-            className="flex h-5 w-5 items-center justify-center rounded-full text-ink-soft hover:bg-moss-pale hover:text-moss"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-ink-soft hover:bg-moss-pale hover:text-moss sm:h-5 sm:w-5"
           >
             <RefreshCw size={10} />
           </button>
@@ -508,7 +508,7 @@ export default function ItineraryPlanner() {
           </p>
           <h2 className="mt-1 font-serif-sc text-2xl leading-snug">你的专属行程出炉了</h2>
           <p className="mt-1 text-sm text-ink-soft">
-            {cityNames} · {tripParams.days} 天 · {totalItems} 个安排 · 拖动 / 上下移动调整顺序
+            {cityNames} · {tripParams.days} 天 · {totalItems} 个安排 · 拖动调整顺序<span className="sm:hidden">（手机推荐用卡片右侧 ▲▼）</span>
           </p>
         </div>
       </div>
