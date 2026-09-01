@@ -1355,7 +1355,7 @@ function ImagePreviewOverlay() {
       onMouseEnter={() => setImagePreviewPoi(poi)}
       onMouseLeave={() => setImagePreviewPoi(null)}
     >
-      <div className="pointer-events-auto w-[420px] overflow-hidden rounded-2xl border-2 border-moss bg-white shadow-2xl">
+      <div className="pointer-events-auto w-[min(420px,92vw)] overflow-hidden rounded-2xl border-2 border-moss bg-white shadow-2xl">
         <PoiImage poi={poi} className="h-56 w-full" rounded="rounded-none" />
         <div className="p-3">
           <div className="flex items-center gap-1.5">
