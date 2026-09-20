@@ -777,6 +777,10 @@ if (persisted) {
     })
   }
   useAppStore.setState((prev) => ({ ...prev, ...persisted } as Partial<AppState>))
+  // 有有效行程时自动进入行程视图
+  if (persisted.itinerary && persisted.itinerary.some((d) => (d.items?.length ?? 0) > 0)) {
+    useAppStore.setState({ currentStep: 4 })
+  }
 }
 
 useAppStore.subscribe((s) => {
