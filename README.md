@@ -4,7 +4,7 @@
 
 ![React](https://img.shields.io/badge/React-19-61dafb) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6) ![Vite](https://img.shields.io/badge/Vite-8-646cff) ![TailwindCSS](https://img.shields.io/badge/Tailwind-4-38bdf8) ![Tests](https://img.shields.io/badge/tests-32%20passed-brightgreen)
 
-**在线体验**：https://lavie-purple.github.io/wanderplan/
+**在线体验**：https://lavie-purple.github.io/Wanderplan/
 
 ## ✨ 功能总览
 
