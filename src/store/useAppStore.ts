@@ -733,6 +733,7 @@ type PersistShape = {
   theme: 'light' | 'dark'
   itineraryView: 'card' | 'timeline'
   historyEnabled: boolean
+  currentStep: 1 | 2 | 3 | 4
 }
 
 function loadPersisted(): Partial<PersistShape> | null {
@@ -783,7 +784,7 @@ if (persisted) {
   }
 }
 
-useAppStore.subscribe((s) => {
+  useAppStore.subscribe((s) => {
   savePersisted({
     selectedCityIds: s.selectedCityIds,
     wantedPoiIds: s.wantedPoiIds,
@@ -813,6 +814,7 @@ useAppStore.subscribe((s) => {
     theme: s.theme,
     itineraryView: s.itineraryView,
     historyEnabled: s.historyEnabled,
+    currentStep: s.currentStep,
   })
   // imagePreviewPoi 不持久化（不需要跨刷新保留）
 })
