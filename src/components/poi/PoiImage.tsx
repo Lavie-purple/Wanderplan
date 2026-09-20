@@ -3,8 +3,69 @@ import type { Poi } from '../../types'
 import { POI_META } from '../../types'
 import { useAppStore } from '../../store/useAppStore'
 
+// Build a map from abbreviation (like 'bj') to Chinese city name (like '北京')
+const cityPrefixToNameMap: Record<string, string> = {
+  "bj": "北京",
+  "sh": "上海",
+  "cd": "成都",
+  "hz": "杭州",
+  "xa": "西安",
+  "dl": "大理",
+  "cq": "重庆",
+  "qd": "青岛",
+  "tk": "东京",
+  "ky": "京都",
+  "bk": "曼谷",
+  "cm": "清迈",
+  "kl": "吉隆坡",
+  "pg": "槟城",
+  "lk": "兰卡威",
+  "ml": "马六甲",
+  "klg": "巴生",
+  "pa": "巴黎",
+  "rm": "罗马",
+  "seoul": "首尔",
+  "sg": "新加坡",
+  "vn": "河内",
+  "in": "孟买",
+  "ae": "迪拜",
+  "tr": "伊斯坦布尔",
+  "id": "巴厘岛",
+  "ph": "马尼拉",
+  "es": "巴塞罗那",
+  "it": "佛罗伦萨",
+  "uk": "伦敦",
+  "gr": "雅典",
+  "nl": "阿姆斯特丹",
+  "ch": "苏黎世",
+  "de": "柏林",
+  "us": "纽约",
+  "ca": "多伦多",
+  "mx": "墨西哥城",
+  "au": "悉尼",
+  "nz": "奥克兰",
+  "eg": "开罗",
+  "ma": "马拉喀什",
+  "za": "开普敦",
+  "br": "里约热内卢",
+  "ar": "布宜诺斯艾利斯",
+  "pe": "库斯科",
+  // Extra cities
+  "cs": "长沙",
+  "heb": "哈尔滨",
+  "xm": "厦门",
+  "sz": "苏州",
+  "dh": "敦煌",
+  "zjjs": "张家界",
+  "ls": "拉萨",
+  "sy": "三亚",
+  "py": "平遥",
+  "wy": "婺源",
+  "fh": "凤凰"
+}
+
 /** 景点配图组件：
- *  - 优先显示本地真实图（public/images/poi/{id}.jpg）
+ *  - 优先显示本地真实图（public/images/poi/{chineseCityName}/{chinesePoiName}.jpg）
  *  - 本地图不存在 → 走 SVG FallbackArt，并叠加"未能找到相应图片"水印
  *  - 用户可手动配 poi.image 覆盖默认
  */
@@ -17,7 +78,7 @@ export function PoiImage({
   className?: string
   rounded?: string
 }) {
-  // 优先级：poi.image > 本地 /images/poi/{id}.jpg > SVG FallbackArt + 缺图水印
+  // 优先级：poi.image > 本地 /images/poi/{chineseCityName}/{chinesePoiName}.jpg > SVG FallbackArt + 缺图水印
   const [localOk, setLocalOk] = useState<boolean | null>(null) // null=检测中, true=有, false=无
   const [userImgOk, setUserImgOk] = useState<boolean>(false)
   const setImagePreviewPoi = useAppStore((s) => s.setImagePreviewPoi)
@@ -31,9 +92,16 @@ export function PoiImage({
     const img = new Image()
     img.onload = () => { if (!cancelled) setLocalOk(true) }
     img.onerror = () => { if (!cancelled) setLocalOk(false) }
-    // 路径规则：public/images/poi/{cityId}/{poiId}.jpg
-    const cityId = poi.id.split('-')[0]
-    img.src = `/images/poi/${cityId}/${poi.id}.jpg`
+    // 路径规则：public/images/poi/{chineseCityName}/{chinesePoiName}.jpg
+    const prefix = poi.id.split('-')[0]
+    const chineseCityName = cityPrefixToNameMap[prefix]
+    if (!chineseCityName) {
+      // If we cannot map prefix to city name, we cannot probe; treat as not found.
+      if (!cancelled) setLocalOk(false)
+      return
+    }
+    const chinesePoiName = poi.name // already Chinese
+    img.src = `/images/poi/${chineseCityName}/${chinesePoiName}.jpg`
     return () => { cancelled = true }
   }, [poi.id, poi.image])
 
@@ -62,7 +130,7 @@ export function PoiImage({
     >
       {useRealImg ? (
         <img
-          src={poi.image ?? `/images/poi/${poi.id.split('-')[0]}/${poi.id}.jpg`}
+          src={poi.image ?? `/images/poi/${cityPrefixToNameMap[poi.id.split('-')[0]]}/${poi.name}.jpg`}
           alt={poi.name}
           loading="lazy"
           decoding="async"

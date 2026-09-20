@@ -469,9 +469,9 @@ export const cities: City[] = [
       { id: 'klg-india', name: '小印度区', type: 'shopping', location: [3.0415, 101.4485], rating: 4.2, description: '纱丽、金饰与香蕉叶饭，色彩浓烈的街区。', duration: 2.0, hiddenTags: ['moderate'] },
       { id: 'klg-port', name: '巴生港码头', type: 'transport', location: [3.006, 101.395], rating: 4.0, description: '吉胆岛渡轮与邮轮码头。', duration: 2.0, hiddenTags: ['moderate'] },
       { id: 'klg-hotel', name: '巴生商务酒店', type: 'hotel', location: [3.04, 101.449], rating: 4.3, description: '肉骨茶街旁，吃夜宵零距离。', duration: 2.0, hiddenTags: ['moderate'] },
-      { id: 'klg-hotel4', name: '巴生希尔顿欢朋', type: 'hotel', location: [3.045, 101.455], rating: 4.5, description: '连锁舒适品牌。', duration: 2.0, hiddenTags: ['moderate'] },
-      { id: 'klg-hotel3', name: 'Klang Sentral Hostel', type: 'hotel', location: [3.04, 101.45], rating: 4.2, description: '巴生车站旁经济青旅。', duration: 2.0, hiddenTags: ['moderate'] },
-      { id: 'klg-hotel2', name: '巴生喜来登', type: 'hotel', location: [3.05, 101.46], rating: 4.7, description: '雪兰莪商务出行首选。', duration: 2.0, hiddenTags: ['moderate'] },
+      { id: 'klg-hotel4', name: 'Hotel Harbour Inn', type: 'hotel', location: [3.0345, 101.4389], rating: 4.3, ticket: 'RM 100–180/晚', description: '泰路普莱区经济型酒店，靠近渡轮码头，性价比首选。', duration: 2.0, hiddenTags: ['moderate'] },
+      { id: 'klg-hotel3', name: 'Premiere Hotel', type: 'hotel', location: [3.0070, 101.4412], rating: 4.4, ticket: 'RM 120–200/晚', description: '巴生商业区老牌酒店，距肉骨茶街步行 10 分钟。', duration: 2.0, hiddenTags: ['moderate'] },
+      { id: 'klg-hotel2', name: 'KSL Esplanade Hotel', type: 'hotel', location: [2.9578, 101.4672], rating: 4.5, ticket: 'RM 150–250/晚', description: '巴生河畔品牌酒店，房间可眺望港口，步行可达夜市。', duration: 2.0, hiddenTags: ['moderate'] },
     ],
   },
 
@@ -639,7 +639,7 @@ export const cities: City[] = [
   { id: 'los_angeles', countryId: 'usa',      name: '洛杉矶',   province: '加州',     emoji: '🌴', gradient: 'from-amber-100 to-orange-100', tagline: '好莱坞与阳光海岸',           description: '好莱坞 + 圣莫尼卡', location: [34.0522, -118.2437], tags: ['city', 'beach'], pois: [
     { id: 'us-hollywood', name: '好莱坞星光大道', type: 'attraction', location: [34.1016, -118.3267], rating: 4.4, description: '2700+ 明星手印。', duration: 2.0, hiddenTags: ['moderate'] },
     { id: 'us-santa-monica', name: '圣莫尼卡海滩', type: 'attraction', location: [34.0094, -118.4973], rating: 4.6, description: '66 号公路终点。', duration: 2.0, hiddenTags: ['moderate'] },
-    { id: 'us-hotel', name: '好莱坞希尔顿', type: 'hotel', location: [34.1016, -118.3403], rating: 4.5, description: '步行到星光大道。', duration: 2.0, hiddenTags: ['moderate'] },
+    { id: 'us-hotel2', name: '好莱坞希尔顿', type: 'hotel', location: [34.1016, -118.3403], rating: 4.5, description: '步行到星光大道。', duration: 2.0, hiddenTags: ['moderate'] },
   ] },
   { id: 'toronto',   countryId: 'canada',     name: '多伦多',   province: '安大略',   emoji: '🍁', gradient: 'from-red-100 to-rose-100',   tagline: '加拿大第一大城',             description: 'CN 塔 + 尼亚加拉门口', location: [43.6532, -79.3832], tags: ['city', 'culture'], pois: [
     { id: 'ca-cn-tower', name: 'CN 塔', type: 'attraction', location: [43.6426, -79.3871], rating: 4.6, ticket: '观景台 A$43 起', description: '553 米加拿大国家塔。', duration: 3.5, hiddenTags: ['deep', 'timed'] },

@@ -1,0 +1,185 @@
+const fs = require('fs');
+const path = require('path');
+
+// Helper to read file as text
+function readFile(file) {
+  return fs.readFileSync(file, 'utf8');
+}
+
+// Extract cityId to cityName map from cities.ts and extraPois.ts (only those with countryId)
+function extractCityIdMap() {
+  const map = {};
+  // From cities.ts
+  const citiesText = readFile('./src/data/cities.ts');
+  // Split by '},' to get city blocks (each ends with '},' except last)
+  const blocks = citiesText.split('},');
+  for (const block of blocks) {
+    if (block.includes('countryId:')) {
+      const idMatch = block.match(/id:\s*'([^']+)'/);
+      const nameMatch = block.match(/name:\s*'([^']+)'/);
+      if (idMatch && nameMatch) {
+        map[idMatch[1]] = nameMatch[1];
+      }
+    }
+  }
+  // Extra cities (known from extraPois context)
+  const extraCityMap = {
+    cs: '长沙',
+    heb: '哈尔滨',
+    xm: '厦门',
+    sz: '苏州',
+    dh: '敦煌',
+    zjjs: '张家界',
+    ls: '拉萨',
+    sy: '三亚',
+    py: '平遥',
+    wy: '婺源',
+    fh: '凤凰'
+  };
+  Object.assign(map, extraCityMap);
+  return map;
+}
+
+// Build prefix -> cityId map from existing ID-named directories
+function buildPrefixToCityIdMap(baseDir) {
+  const map = {};
+  // Get all subdirectories that are likely city IDs (we'll use all directories for safety)
+  const entries = fs.readdirSync(baseDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      const cityId = entry.name;
+      const dirPath = path.join(baseDir, cityId);
+      const files = fs.readdirSync(dirPath);
+      for (const file of files) {
+        if (file.endsWith('.jpg')) {
+          const poiId = path.parse(file).name; // filename without extension
+          const prefix = poiId.split('-')[0];
+          if (!map[prefix]) {
+            map[prefix] = cityId;
+          }
+          // If already set, we assume it's the same (should be)
+        }
+      }
+    }
+  }
+  return map;
+}
+
+// Extract poi id and name from a file (cities.ts or extraPois.ts)
+function extractPois(filePath) {
+  const content = readFile(filePath);
+  const pois = [];
+  const regex = /id:\s*'([^']+)'[\s\S]*?name:\s*'([^']+)'/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const id = match[1];
+    const name = match[2];
+    if (id.includes('-')) {
+      pois.push({ id, name });
+    }
+  }
+  return pois;
+}
+
+const baseDir = path.resolve('./public/images/poi');
+console.log('Base image directory:', baseDir);
+
+// Step 1: cityId to cityName map
+const cityIdToCityName = extractCityIdMap();
+console.log('City ID to Chinese name map (first 5):', Object.entries(cityIdToCityName).slice(0, 5));
+
+// Step 2: prefix to cityId map from existing ID-named directories
+const prefixToCityId = buildPrefixToCityIdMap(baseDir);
+console.log('Prefix to city ID map (first 5):', Object.entries(prefixToCityId).slice(0, 5));
+
+// Step 3: extract pois from both files
+const citiesPois = extractPois('./src/data/cities.ts');
+const extraPois = extractPois('./src/data/extraPois.ts');
+const allPois = [...citiesPois, ...extraPois];
+console.log(`Total POIs found: ${allPois.length}`);
+
+// Step 4: create directories and files
+let createdDirs = 0;
+let createdFiles = 0;
+const mapping = [];
+
+for (const poi of allPois) {
+  const prefix = poi.id.split('-')[0];
+  const cityId = prefixToCityId[prefix];
+  if (!cityId) {
+    console.warn(`Could not find cityId for poiId ${poi.id} (prefix ${prefix})`);
+    continue;
+  }
+  const cityName = cityIdToCityName[cityId];
+  if (!cityName) {
+    console.warn(`Could not find cityName for cityId ${cityId}`);
+    continue;
+  }
+  const cityDir = path.join(baseDir, cityName);
+  if (!fs.existsSync(cityDir)) {
+    fs.mkdirSync(cityDir, { recursive: true });
+    console.log(`Created directory: ${cityDir}`);
+    createdDirs++;
+  }
+  const fileName = poi.name + '.jpg';
+  const filePath = path.join(cityDir, fileName);
+  // Always create/overwrite with white placeholder
+  const whiteJpgSrc = path.join(baseDir, 'beijing', 'bj-gugong.jpg');
+  let whiteJpgBuffer;
+  if (fs.existsSync(whiteJpgSrc)) {
+    whiteJpgBuffer = fs.readFileSync(whiteJpgSrc);
+  } else {
+    // Generate minimal white JPG
+    whiteJpgBuffer = Buffer.from([
+      0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xFF, 0xDB, 0x00, 0x43,
+      0x00, 0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08, 0x07, 0x07, 0x07, 0x09,
+      0x09, 0x08, 0x0A, 0x0C, 0x14, 0x0D, 0x0C, 0x0B, 0x0B, 0x0C, 0x19, 0x12,
+      0x13, 0x0F, 0x14, 0x1D, 0x1A, 0x1F, 0x1E, 0x1D, 0x1A, 0x1C, 0x1C, 0x20,
+      0x24, 0x2E, 0x27, 0x20, 0x22, 0x2C, 0x23, 0x1C, 0x1C, 0x28, 0x37, 0x29,
+      0x2C, 0x30, 0x31, 0x33, 0x34, 0x34, 0x34, 0x34, 0x37, 0x37, 0x37, 0x37,
+      0x37, 0x37, 0x37, 0x37, 0x37, 0x37, 0x37, 0x37, 0x37, 0x37, 0x37, 0xFF,
+      0xC0, 0x00, 0x11, 0x08, 0x00, 0x01, 0x00, 0x01, 0x03, 0x01, 0x22, 0x00,
+      0x02, 0x11, 0x01, 0x03, 0x01, 0x11, 0x01, 0xFF, 0xC4, 0x00, 0x1F, 0x00, 0x00,
+      0x01, 0x05, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+      0x09, 0x0A, 0x0B, 0xFF, 0xC4, 0x00, 0xB5, 0x10, 0x00, 0x02, 0x01, 0x03,
+      0x03, 0x02, 0x04, 0x03, 0x05, 0x05, 0x04, 0x04, 0x00, 0x00, 0x01, 0x7D,
+      0x01, 0x02, 0x03, 0x00, 0x04, 0x11, 0x05, 0x12, 0x13, 0x03, 0x14, 0x04,
+      0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x81, 0x91, 0xA1, 0x02, 0x11, 0x21,
+      0x31, 0x41, 0x52, 0x62, 0x72, 0x82, 0x92, 0xA2, 0xB2, 0xC2, 0xD2, 0xE2,
+      0xF2, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D,
+      0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+      0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0xFF, 0xDA, 0x00, 0x0C, 0x03, 0x01,
+      0x00, 0x02, 0x03, 0x03, 0x11, 0x00, 0x3F, 0x00, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xFF, 0xD9
+    ]);
+  }
+  fs.writeFileSync(filePath, whiteJpgBuffer);
+  console.log(`Created placeholder: ${filePath}`);
+  createdFiles++;
+  mapping.push({ poiId: poi.id, poiName: poi.name, cityName, filePath });
+}
+
+// Write mapping table
+const mappingPath = path.resolve('./POI_image_mapping_final.txt');
+let mappingText = 'POI ID\tCity Name\tPOI Name (Chinese)\tImage File Path\n';
+for (const m of mapping) {
+  mappingText += `${m.poiId}\t${m.cityName}\t${m.poiName}\t${m.filePath}\n`;
+}
+fs.writeFileSync(mappingPath, mappingText);
+console.log(`Mapping table written to: ${mappingPath}`);
+console.log(`\nSummary:`);
+console.log(`  Directories created: ${createdDirs}`);
+console.log(`  Files created: ${createdFiles}`);
+console.log(`Done.`);
