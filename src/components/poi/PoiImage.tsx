@@ -101,7 +101,7 @@ export function PoiImage({
       return
     }
     const chinesePoiName = poi.name // already Chinese
-    img.src = `/images/poi/${encodeURIComponent(chineseCityName)}/${encodeURIComponent(chinesePoiName)}.jpg`
+    img.src = `images/poi/${encodeURIComponent(chineseCityName)}/${encodeURIComponent(chinesePoiName)}.jpg`
     return () => { cancelled = true }
   }, [poi.id, poi.image])
 
@@ -130,7 +130,7 @@ export function PoiImage({
     >
       {useRealImg ? (
         <img
-          src={poi.image ?? `/images/poi/${encodeURIComponent(cityPrefixToNameMap[poi.id.split('-')[0]])}/${encodeURIComponent(poi.name)}.jpg`}
+          src={poi.image ?? `images/poi/${encodeURIComponent(cityPrefixToNameMap[poi.id.split('-')[0]])}/${encodeURIComponent(poi.name)}.jpg`}
           alt={poi.name}
           loading="lazy"
           decoding="async"
