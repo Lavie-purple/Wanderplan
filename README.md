@@ -17,7 +17,7 @@
 | 🪄 AI 行程 | 自动编排每日行程，支持拖拽微调、锁定、多方案对比与一键导出 |
 
 ### 地图联动（Leaflet + 智能瓦片）
-- **境内高德 / 境外 CARTO** 自动切换，境外可开启天地图中文标注（Key 仅存本地）
+- **境内高德 / 境外天地图** 自动切换，未配 Key 时境外回退英文 CARTO
 - 城市间**贝塞尔流动弧线**（出发/归途段自动降低亮度），缩放到城市级自动隐藏
 - 自适应 LOD：全球视野看国家标注 → 中国视野看重点城市 → 街道级看 POI
 - 城市标注**自动避让 + 引线**（leader line），密集区域不再互相遮挡
@@ -54,10 +54,12 @@ npm test         # 运行单元测试
 景点配图按以下规则读取（优先级从高到低）：
 
 1. POI 数据里的显式 `image` 字段
-2. 本地图：`public/images/poi/{cityId}/{poiId}.jpg`（如 `beijing/bj-gugong.jpg`，建议 480×360）
-3. 本地 SVG 占位（含「未能找到相应图片」水印，永不空白）
+2. 本地图：`public/images/poi/{中文城市名}/{中文POI名}.jpg`（如 `北京/故宫博物院.jpg`，当前已收录 **58 个城市目录、376 张图片**）
+3. 本地 SVG 占位（按 POI ID 哈希生成独特渐变装饰，含「未能找到相应图片」水印，永不空白）
 
-想补充真实照片？把图片按上面的命名规则放进对应城市文件夹即可，无需改代码。
+想补充真实照片？把图片按上面的命名规则放进对应城市文件夹即可，Vite 热更新即时生效。
+
+> **注意**：图片路径使用相对路径（`images/poi/...`，无 `/` 前缀）以兼容 GitHub Pages 子目录部署；中文文件名会自动 URL 编码。本地 dev server（`localhost:5173`）无此限制。
 
 ## 🔑 天地图 Key（可选）
 
@@ -66,6 +68,8 @@ npm test         # 运行单元测试
 ## ☁️ 部署
 
 推送到 `main` 分支后，GitHub Actions 自动构建并发布到 Pages（见 [.github/workflows/deploy.yml](.github/workflows/deploy.yml)）。首次使用需在仓库 **Settings → Pages → Source 选 "GitHub Actions"**。
+
+本项目部署在 GitHub Pages **子目录**（`username.github.io/repo/`），Vite 配置 `base: './'` 使用相对路径，图片与资源均通过相对路径引用，确保子目录部署正常。
 
 ## 📄 License
 
